@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link href="build/styles.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
+</head>
+<body>
+<p>{{ error }}</p>
+<table class="border-2" style="width:40%">
+<tr>
+    <th>Company Name</th>
+    <th>Current Stock Price</th>
+    <th>Company Ticker</th>
+    <th>Logo</th>
+</tr>
+<tr>
+    <th>{{ name }}</th>
+    <th>{{ stock }}</th>
+    <th>{{ ticker }}</th>
+    <th><img src="{{ logo }}" width="30%" height="30%" alt="Logo of company"></th>
+</tr>
+</table>
+</body>
+</html>

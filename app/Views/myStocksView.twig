@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link href="build/styles.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
+</head>
+<body>
+<p>My budget: {{ myBudget }}</p><br>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Symbol</th>
+        <th>Price when bought</th>
+        <th>Amount</th>
+        <th>Logo</th>
+        <th>Current Price</th>
+        <th>Earnings</th>
+    </tr>
+    {% for stock in myStocks %}
+
+        <tr>
+            <td>{{ stock['name'] }}</td>
+            <td>{{ stock['symbol'] }}</td>
+            <td>{{ stock['price_at_buy'] }}</td>
+            <td>{{ stock['amount'] }}</td>
+            <td><img src="{{ stock['logo'] }}" width="30%" height="30%" alt="Logo of company"></td>
+            <td>{{ stock['current_price'] }}</td>
+            {% if stock['earnings'] >= 0 %}
+                <td class="text-green-500">{{ stock['earnings'] }}</td>
+            {% else %}
+                <td class="text-red-500">{{ stock['earnings'] }}</td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+</table>
+{% if totalEarnings >= 0 %}
+Total earnings: <div class="text-green-500">{{ totalEarnings }}</div>
+{% else %}
+Total earnings: <div class="text-red-500">{{ totalEarnings }}</div>
+{% endif %}
+</body>
+</html>

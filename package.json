@@ -1,0 +1,19 @@
+{
+  "name": "stockbuy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "postcss.config.js",
+  "scripts": {
+    "build": "postcss app/public/css/styles.css -o app/public/build/styles.css"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "tailwindcss": "^2.1.1"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.2.5"
+  }
+}
