@@ -10,7 +10,6 @@ use App\Services\MyBalanceService;
 use App\Services\MyStockService;
 use App\Services\StocksService;
 use App\Services\twigService;
-use http\Encoding\Stream\Enbrotli;
 
 class MyStocksController
 {
@@ -33,8 +32,6 @@ class MyStocksController
     {
         echo $this->twigService->twig->render('headerView.twig');
         $myStockProfile = $this->myStockService->selectAll();
-        $myBudget = $this->myBudgetService->selectBalance();
-        $myBudget = $myBudget[0]['budget'];
         $totalEarnings = 0;
         if (!empty($myStockProfile)) {
             foreach ($myStockProfile as $item) {
@@ -49,7 +46,6 @@ class MyStocksController
         $myStockProfile = $this->myStockService->selectAll();
         $context = [
             'myStocks' => $myStockProfile,
-            'myBudget' => $myBudget,
             'totalEarnings' => $totalEarnings
         ];
         echo $this->twigService->twig->render('myStocksView.twig', $context);
@@ -71,6 +67,8 @@ class MyStocksController
                 $budget = $budget[0]['budget'];
                 $newBudget = $budget+$value;
                 $this->myBudgetService->updateBudget($newBudget);
+                $message = 'Stock sold, you earned: '.$value.PHP_EOL.
+                    'New budget: '.$newBudget;
             }else{
                 $message = 'Did not found stock';
             }
@@ -79,13 +77,5 @@ class MyStocksController
             'message' => $message,
         ];
     echo $this->twigService->twig->render('sellStockView.twig',$context);
-    if (!empty($stocks)){
-        $context = [
-            'value' => $value,
-            'newBudget' => $newBudget
-        ];
-        echo $this->twigService->twig->render('soldView.twig',$context);
-        header('Location: myStocks');
-    }
     }
 }
