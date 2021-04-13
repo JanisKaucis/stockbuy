@@ -10,6 +10,7 @@ use App\Services\MyBalanceService;
 use App\Services\MyStockService;
 use App\Services\StocksService;
 use App\Services\twigService;
+use http\Encoding\Stream\Enbrotli;
 
 class MyStocksController
 {
@@ -52,5 +53,39 @@ class MyStocksController
             'totalEarnings' => $totalEarnings
         ];
         echo $this->twigService->twig->render('myStocksView.twig', $context);
+    }
+    public function sellStock()
+    {
+        if (isset($_POST['submit3'])){
+            $_SESSION['stock']['sell'] = $_POST['symbol2'];
+            $stocks = $this->myStockService->selectBySymbol($_SESSION['stock']['sell']);
+            if (!empty($stocks)){
+                $price = $this->apiRepository->getSymbolPrice($_SESSION['stock']['sell']);
+                $price = $price->getC();
+                $this->myStockService->deleteStock($_SESSION['stock']['sell']);
+                $value = 0;
+                foreach ($stocks as $stock){
+                    $value += $price * $stock['amount'];
+                }
+                $budget = $this->myBudgetService->selectBalance();
+                $budget = $budget[0]['budget'];
+                $newBudget = $budget+$value;
+                $this->myBudgetService->updateBudget($newBudget);
+            }else{
+                $message = 'Did not found stock';
+            }
+        }
+        $context = [
+            'message' => $message,
+        ];
+    echo $this->twigService->twig->render('sellStockView.twig',$context);
+    if (!empty($stocks)){
+        $context = [
+            'value' => $value,
+            'newBudget' => $newBudget
+        ];
+        echo $this->twigService->twig->render('soldView.twig',$context);
+        header('Location: myStocks');
+    }
     }
 }

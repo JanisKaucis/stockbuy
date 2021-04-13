@@ -28,4 +28,8 @@ class MyStockService
     {
         return $this->myStocksRepository->updateCurrentPriceAndEarnings($priceAtBuy,$price,$earnings);
     }
+    public function deleteStock($symbol)
+    {
+        return $this->myStocksRepository->deleteStock($symbol);
+    }
 }

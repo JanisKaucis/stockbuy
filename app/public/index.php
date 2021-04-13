@@ -7,7 +7,7 @@ session_start();
 
 $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
     $r->addRoute(['GET','POST'], '/', [HomeController::class, 'searchStock','buyStock']);
-    $r->addRoute(['GET','POST'],'/myStocks',[MyStocksController::class,'myStocks']);
+    $r->addRoute(['GET','POST'],'/myStocks',[MyStocksController::class,'myStocks','sellStock']);
 });
 
 // Fetch method and URI from somewhere

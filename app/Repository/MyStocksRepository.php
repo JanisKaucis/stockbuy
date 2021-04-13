@@ -8,4 +8,5 @@ interface MyStocksRepository
     public function insert($name,$symbol,$buyPrice,$amount,$logo);
     public function updateAmount($symbol,$amount);
     public function updateCurrentPriceAndEarnings($priceAtBuy,$price,$earnings);
+    public function deleteStock($symbol);
 }

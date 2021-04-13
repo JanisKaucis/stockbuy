@@ -37,6 +37,9 @@ class mysqlMyStocksRepository implements MyStocksRepository
     public function updateCurrentPriceAndEarnings($priceAtBuy,$price,$earnings)
     {
         $this->database->update('MyStocks',['current_price' => $price,'earnings' => $earnings],['price_at_buy' => $priceAtBuy]);
-      //  $this->database->update('MyStocks',['earnings' => 3],['symbol' => 'AAPL']);
+    }
+    public function deleteStock($symbol)
+    {
+        $this->database->delete('MyStocks',['symbol' => $symbol]);
     }
 }
