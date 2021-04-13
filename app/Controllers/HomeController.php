@@ -74,7 +74,7 @@ class HomeController
         $budget = $this->myBudgetService->selectBalance();
         $budget = $budget[0]['budget'];
         $companyProfile = $this->stockService->selectBySymbol($_SESSION['stock']['symbol']);
-        if ($companyProfile[0]['current_price'] > $budget) {
+        if (isset($_POST['submit1']) && $companyProfile[0]['current_price'] > $budget) {
             $_SESSION['stock']['message'] = 'You cannot afford this stock';
             $context = [
                 'message' => $_SESSION['stock']['message'],
