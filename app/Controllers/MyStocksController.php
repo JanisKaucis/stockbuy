@@ -3,9 +3,6 @@
 namespace App\Controllers;
 
 use App\Repository\apiRepository;
-use App\Repository\mysqlMyBalanceRepository;
-use App\Repository\mysqlMyStocksRepository;
-use App\Repository\mysqlStocksRepository;
 use App\Services\MyBalanceService;
 use App\Services\MyStockService;
 use App\Services\StocksService;
@@ -19,63 +16,34 @@ class MyStocksController
     public MyStockService $myStockService;
     public MyBalanceService $myBudgetService;
 
-    public function __construct()
+    public function __construct(StocksService $stockService,MyStockService $myStockService,MyBalanceService $myBudgetService)
     {
         $this->apiRepository = new apiRepository();
         $this->twigService = new twigService();
-        $this->stockService = new StocksService(new mysqlStocksRepository());
-        $this->myStockService = new MyStockService(new mysqlMyStocksRepository());
-        $this->myBudgetService = new MyBalanceService(new mysqlMyBalanceRepository());
+        $this->stockService = $stockService;
+        $this->myStockService = $myStockService;
+        $this->myBudgetService = $myBudgetService;
     }
 
     public function myStocks()
     {
-        echo $this->twigService->twig->render('headerView.twig');
-        $myStockProfile = $this->myStockService->selectAll();
-        $totalEarnings = 0;
-        if (!empty($myStockProfile)) {
-            foreach ($myStockProfile as $item) {
-                $price = $this->apiRepository->getSymbolPrice($item['symbol']);
-                $currentPrice = $price->getC();
-                $earnings = $item['price_at_buy'] - $currentPrice;
-                $totalEarnings += $earnings;
-                $this->myStockService->updateCurrentPriceAndEarnings($item['price_at_buy'], $currentPrice, $earnings);
-            }
+        $this->myStockService->myStocks();
+        $this->myStockService->sellStocks();
+        $myStockProfile = $this->myStockService->myStockProfile;
+        $totalEarnings = $this->myStockService->totalEarnings;
+        if (isset($_POST['submit3'])) {
+            $message = $this->myStockService->message;
         }
-        $totalEarnings = number_format($totalEarnings,2);
-        $myStockProfile = $this->myStockService->selectAll();
+
+        echo $this->twigService->twig->render('headerView.twig');
         $context = [
             'myStocks' => $myStockProfile,
             'totalEarnings' => $totalEarnings
         ];
         echo $this->twigService->twig->render('myStocksView.twig', $context);
-    }
-    public function sellStock()
-    {
-        if (isset($_POST['submit3'])){
-            $_SESSION['stock']['sell'] = $_POST['symbol2'];
-            $stocks = $this->myStockService->selectBySymbol($_SESSION['stock']['sell']);
-            if (!empty($stocks)){
-                $price = $this->apiRepository->getSymbolPrice($_SESSION['stock']['sell']);
-                $price = $price->getC();
-                $this->myStockService->deleteStock($_SESSION['stock']['sell']);
-                $value = 0;
-                foreach ($stocks as $stock){
-                    $value += $price * $stock['amount'];
-                }
-                $budget = $this->myBudgetService->selectBalance();
-                $budget = $budget[0]['budget'];
-                $newBudget = $budget+$value;
-                $this->myBudgetService->updateBudget($newBudget);
-                $message = 'Stock sold, you earned: '.$value.PHP_EOL.
-                    'New budget: '.$newBudget;
-            }else{
-                $message = 'Did not found stock';
-            }
-        }
-        $context = [
-            'message' => $message,
-        ];
-    echo $this->twigService->twig->render('sellStockView.twig',$context);
+            $context = [
+                'message' => $message,
+            ];
+            echo $this->twigService->twig->render('sellStockView.twig', $context);
     }
 }
