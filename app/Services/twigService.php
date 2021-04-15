@@ -9,7 +9,7 @@ class twigService
 {
     public function __construct()
     {
-        $this->loader = new FilesystemLoader('../Views');
+        $this->loader = new FilesystemLoader('../app/Views');
         $this->twig = new Environment($this->loader,[
             'debug' => true
         ]);

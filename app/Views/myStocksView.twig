@@ -10,11 +10,13 @@
     <link href="css/styles.css" rel="stylesheet">
 </head>
 <body>
-<table>
+<p>My budget: {{ budget }}</p>
+<table class="border-2" style="width:50%">
     <tr>
         <th>Name</th>
         <th>Symbol</th>
         <th>Price when bought</th>
+        <th>TotalPrice</th>
         <th>Amount</th>
         <th>Logo</th>
         <th>Current Price</th>
@@ -26,12 +28,15 @@
             <td>{{ stock['name'] }}</td>
             <td>{{ stock['symbol'] }}</td>
             <td>{{ stock['price_at_buy'] }}</td>
+            <td>{{ stock['total_price'] }}</td>
             <td>{{ stock['amount'] }}</td>
             <td><img src="{{ stock['logo'] }}" width="30%" height="30%" alt="Logo of company"></td>
             <td>{{ stock['current_price'] }}</td>
-            {% if stock['earnings'] >= 0 %}
+            {% if stock['earnings'] > 0 %}
                 <td class="text-green-500">{{ stock['earnings'] }}</td>
-            {% else %}
+            {% elseif stock['earnings'] == 0 %}
+                <td class="text-blue-500">{{ stock['earnings'] }}</td>
+                {% else %}
                 <td class="text-red-500">{{ stock['earnings'] }}</td>
             {% endif %}
         </tr>

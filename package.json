@@ -4,7 +4,7 @@
   "description": "",
   "main": "postcss.config.js",
   "scripts": {
-    "build": "postcss app/public/css/styles.css -o app/public/build/styles.css"
+    "build": "postcss public/css/styles.css -o public/build/styles.css"
   },
   "keywords": [],
   "author": "",

@@ -16,7 +16,7 @@ class HomeController
     public MyStockService $myStockService;
     public MyBalanceService $myBudgetService;
 
-    public function __construct(StocksService $stockService,MyStockService $myStockService,MyBalanceService $myBudgetService)
+    public function __construct(StocksService $stockService, MyStockService $myStockService, MyBalanceService $myBudgetService)
     {
         $this->apiRepository = new apiRepository();
         $this->twigService = new twigService();
@@ -27,15 +27,30 @@ class HomeController
 
     public function searchAndBuyStock()
     {
-        echo $this->twigService->twig->render('headerView.twig');
-        echo $this->twigService->twig->render('homeView.twig');
+
         $this->stockService->searchStock();
+        $budget = $this->stockService->budget;
         $companyProfile = $this->stockService->companyProfile;
+//        var_dump($companyProfile);
         $currentPrice = $this->stockService->currentPrice;
         $companyName = $companyProfile[0]['name'];
         $companySymbol = $companyProfile[0]['symbol'];
         $companyLogo = $companyProfile[0]['logo'];
-        if (!empty($companyProfile)) {
+
+        echo $this->twigService->twig->render('headerView.twig');
+        $home = [
+            'budget' => $budget
+        ];
+        echo $this->twigService->twig->render('homeView.twig',$home);
+
+        if (isset($_POST['submit1']) && empty($companyProfile)) {
+            $errorMessage = 'Wrong symbol';
+            $context = [
+                'error' => $errorMessage
+            ];
+            echo $this->twigService->twig->render('homeErrorView.twig', $context);
+        }
+        if(!empty($companyProfile)){
             $context = [
                 'name' => $companyName,
                 'stock' => $currentPrice,
@@ -43,22 +58,23 @@ class HomeController
                 'ticker' => $companySymbol,
             ];
             echo $this->twigService->twig->render('showStockView.twig', $context);
-        }else{
-            $errorMessage = 'Wrong symbol entered';
-            $context = [
-                'error' => $errorMessage
-                ];
-            echo $this->twigService->twig->render('homeErrorView.twig', $context);
         }
         $this->stockService->buyStock();
-        $budget = $this->stockService->budget;
-        $context = [
-            'message' => $_SESSION['stock']['message'],
-            'amountMessage' => $_SESSION['stock']['amountMessage'],
-            'budget' => $budget
-        ];
-        if (isset($_POST['submit1']) && !empty($companyProfile)) {
-            echo $this->twigService->twig->render('buyStockView.twig', $context);
+        if (isset($_POST['submit1']) && $companyProfile[0]['current_price'] > $budget) {
+            $_SESSION['stock']['message'] = 'You cannot afford this stock';
+            $context = [
+                'error' => $_SESSION['stock']['message'],
+            ];
+            echo $this->twigService->twig->render('homeErrorView.twig', $context);
+        } else {
+            $context = [
+                'message' => $_SESSION['stock']['message'],
+                'amountMessage' => $_SESSION['stock']['amountMessage'],
+                'budget' => $budget
+            ];
+            if (isset($_POST['submit1']) && !empty($companyProfile)) {
+                echo $this->twigService->twig->render('buyStockView.twig', $context);
+            }
         }
     }
 }

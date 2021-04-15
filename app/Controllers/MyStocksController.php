@@ -31,19 +31,30 @@ class MyStocksController
         $this->myStockService->sellStocks();
         $myStockProfile = $this->myStockService->myStockProfile;
         $totalEarnings = $this->myStockService->totalEarnings;
+        $budget = $this->myStockService->budget;
         if (isset($_POST['submit3'])) {
             $message = $this->myStockService->message;
         }
 
         echo $this->twigService->twig->render('headerView.twig');
-        $context = [
-            'myStocks' => $myStockProfile,
-            'totalEarnings' => $totalEarnings
-        ];
-        echo $this->twigService->twig->render('myStocksView.twig', $context);
+        if (empty($myStockProfile)) {
+            $errorMessage = 'No Stocks';
+            $context = [
+                'error' => $errorMessage
+            ];
+            echo $this->twigService->twig->render('homeErrorView.twig', $context);
+
+        }else {
+            $context = [
+                'budget' => $budget,
+                'myStocks' => $myStockProfile,
+                'totalEarnings' => $totalEarnings
+            ];
+            echo $this->twigService->twig->render('myStocksView.twig', $context);
             $context = [
                 'message' => $message,
             ];
             echo $this->twigService->twig->render('sellStockView.twig', $context);
+        }
     }
 }
