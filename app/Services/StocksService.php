@@ -15,6 +15,7 @@ class StocksService
     private MyBalanceService $myBudgetService;
     public twigService $twigService;
     public MyStockService $myStocksService;
+    public $companyProfile;
     public $currentPrice;
     public $budget;
 
