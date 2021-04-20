@@ -68,9 +68,10 @@ class MyStockService
         $totalEarnings = 0;
         if (!empty($myStockProfile)) {
             foreach ($myStockProfile as $item) {
+                $amount = $item['amount'];
                 $price = $this->apiRepository->getSymbolPrice($item['symbol']);
                 $currentPrice = $price->getC();
-                $earnings = ($item['price_at_buy'] - $currentPrice) / $item['price_at_buy'] * 100;
+                $earnings = ($currentPrice * $amount)- ($item['price_at_buy'] * $amount);
                 $earnings = number_format($earnings, 2);
                 $totalEarnings += floatval($earnings);
                 $this->updateCurrentPriceAndEarnings($item['price_at_buy'], $currentPrice, $earnings);
