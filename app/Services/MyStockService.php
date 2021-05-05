@@ -12,7 +12,7 @@ class MyStockService
     private apiRepository $apiRepository;
     private MyStocksRepository $myStocksRepository;
     private MyBalanceService $myBudgetService;
-    public string $message;
+    public string $message = '';
     public $stocks;
     public $budget;
     public string $totalEarnings;
@@ -105,9 +105,7 @@ class MyStockService
                     $totalPrice = $this->stocks[0]['total_price'] -
                         $this->stocks[0]['price_at_buy']*$_SESSION['stock']['sellAmount'];
                     $this->updateAmountAndTotalPrice($_SESSION['stock']['sell'], $amount,$totalPrice);
-                    foreach ($this->stocks as $stock) {
                         $value = $price * $_SESSION['stock']['sellAmount'];
-                    }
                 }
                 if ($value == 0) {
                     $this->message = 'Wrong Amount';

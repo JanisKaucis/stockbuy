@@ -15,9 +15,10 @@ class StocksService
     private MyBalanceService $myBudgetService;
     public twigService $twigService;
     public MyStockService $myStocksService;
-    public $companyProfile;
+    public $companyProfile = '';
     public $currentPrice;
     public $budget;
+    public $maxAmount;
 
     public function __construct(StocksRepository $stocksRepository, MyBalanceRepository $myBalanceRepository, MyStocksRepository $myStocksRepository)
     {
@@ -57,6 +58,7 @@ class StocksService
             $stock = $this->apiRepository->getSymbolPrice($_SESSION['stock']['symbol']);
             if ($stock->getC() != 0) {
                 $this->currentPrice = $stock->getC();
+                $_SESSION['stock']['price'] = $this->currentPrice;
                 if (empty($this->selectBySymbol($_SESSION['stock']['symbol']))) {
                     $companyProfile = $this->apiRepository->getCompanyProfile($_SESSION['stock']['symbol']);
                     $companyName = $companyProfile->getName();
@@ -67,57 +69,66 @@ class StocksService
                     $this->updateCurrentPrice($this->currentPrice, $_SESSION['stock']['symbol']);
                 }
                 $this->companyProfile = $this->selectBySymbol($_SESSION['stock']['symbol']);
+                $_SESSION['stock']['profile'] = $this->companyProfile;
             }
         }
     }
 
     public function buyStock()
     {
-        $companyProfile = $this->selectBySymbol($_SESSION['stock']['symbol']);
-        $maxAmount = floor($this->budget / $companyProfile[0]['current_price']);
-        $leftBudget = $this->budget - $maxAmount * $companyProfile[0]['current_price'];
-        $_SESSION['stock']['message'] = 'You can buy up to ' . $maxAmount . ' stocks' . PHP_EOL . 'with ' .
-            $leftBudget . ' budget left.';
-        if (isset($_POST['submit2'])) {
-            $_SESSION['stock']['amount'] = $_POST['amount'];
-            if (isset($_SESSION['stock']['amount']) && $_SESSION['stock']['amount'] > $maxAmount ||
-                $_SESSION['stock']['amount'] <= 0) {
-                $_SESSION['stock']['amountMessage'] = 'You cannot buy ' . $_SESSION['stock']['amount'] .
-                    ' stocks';
-            } else {
-                $buyPrice = $companyProfile[0]['current_price'];
-                $amount = $_SESSION['stock']['amount'];
-                $this->budget = $this->budget - $amount * $buyPrice;
-                $this->myBudgetService->updateBudget($this->budget);
+        $_SESSION['stock']['amountMessage'] = '';
+        $_SESSION['stock']['message'] = '';
+        if (!empty($_SESSION['stock']['profile'])) {
+            $this->companyProfile = $_SESSION['stock']['profile'];
+            $this->maxAmount = floor($this->budget / $this->companyProfile[0]['current_price']);
+            $leftBudget = $this->budget - $this->maxAmount * $this->companyProfile[0]['current_price'];
+            $_SESSION['stock']['message'] = 'You can buy up to ' . $this->maxAmount . ' stocks' . PHP_EOL . 'with ' .
+                $leftBudget . ' budget left.';
+            if (isset($_POST['submit2'])) {
+                if (empty($_POST['amount'])) {
+                    $_SESSION['stock']['amountMessage'] = 'Please enter amount which is not zero';
+                } else {
+                    $_SESSION['stock']['amount'] = $_POST['amount'];
+                    if (isset($_SESSION['stock']['amount']) && $_SESSION['stock']['amount'] > $this->maxAmount ||
+                        $_SESSION['stock']['amount'] <= 0) {
+                        $_SESSION['stock']['amountMessage'] = 'You cannot buy ' . $_SESSION['stock']['amount'] .
+                            ' stocks';
+                    } else {
+                        $buyPrice = $this->companyProfile[0]['current_price'];
+                        $amount = $_SESSION['stock']['amount'];
+                        $this->budget = $this->budget - $amount * $buyPrice;
+                        $this->myBudgetService->updateBudget($this->budget);
 
-                $companyName = $companyProfile[0]['name'];
-                $companySymbol = $companyProfile[0]['symbol'];
-                $companyLogo = $companyProfile[0]['logo'];
-                $companyTotalPrice = $buyPrice * $amount;
+                        $companyName = $this->companyProfile[0]['name'];
+                        $companySymbol = $this->companyProfile[0]['symbol'];
+                        $companyLogo = $this->companyProfile[0]['logo'];
+                        $companyTotalPrice = $buyPrice * $amount;
 
-                $myStocks = $this->myStocksService->selectAll();
-                $insertHint = 0;
-                if (!empty($myStocks)) {
-                foreach ($myStocks as $stock){
-                    if ((in_array($companySymbol,$stock))){
-                        $insertHint++;
+                        $myStocks = $this->myStocksService->selectAll();
+                        $insertHint = 0;
+                        if (!empty($myStocks)) {
+                            foreach ($myStocks as $stock) {
+                                if ((in_array($companySymbol, $stock))) {
+                                    $insertHint++;
+                                }
+                                if ($stock['symbol'] == $companySymbol) {
+                                    $amount = $amount + $stock['amount'];
+                                    $totalPrice = $companyTotalPrice + $stock['total_price'];
+                                    $priceAtBuy = $totalPrice / $amount;
+                                    $this->myStocksService->updateStockPriceAndAmount($priceAtBuy, $amount, $totalPrice, $companySymbol);
+                                }
+                            }
+                            if ($insertHint == 0) {
+                                $this->myStocksService->insert($companyName, $companySymbol, $buyPrice, $amount,
+                                    $companyTotalPrice, $companyLogo);
+                            }
+                        } else {
+                            $this->myStocksService->insert($companyName, $companySymbol, $buyPrice, $amount,
+                                $companyTotalPrice, $companyLogo);
+                        }
+                        header('Location: myStocks');
                     }
-                    if ($stock['symbol'] == $companySymbol) {
-                        $amount = $amount + $stock['amount'];
-                        $totalPrice = $companyTotalPrice + $stock['total_price'];
-                        $priceAtBuy = $totalPrice / $amount;
-                        $this->myStocksService->updateStockPriceAndAmount($priceAtBuy, $amount, $totalPrice, $companySymbol);
-                    }
                 }
-                if ($insertHint == 0){
-                    $this->myStocksService->insert($companyName, $companySymbol, $buyPrice, $amount,
-                        $companyTotalPrice, $companyLogo);
-                }
-                }else{
-                    $this->myStocksService->insert($companyName, $companySymbol, $buyPrice, $amount,
-                        $companyTotalPrice, $companyLogo);
-                }
-                header('Location: myStocks');
             }
         }
     }

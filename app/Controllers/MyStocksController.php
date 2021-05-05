@@ -34,6 +34,8 @@ class MyStocksController
         $budget = $this->myStockService->budget;
         if (isset($_POST['submit3'])) {
             $message = $this->myStockService->message;
+        }else{
+            $message = '';
         }
 
         echo $this->twigService->twig->render('headerView.twig');

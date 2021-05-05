@@ -27,21 +27,14 @@ class HomeController
 
     public function searchAndBuyStock()
     {
-
         $this->stockService->searchStock();
         $budget = $this->stockService->budget;
-        $companyProfile = $this->stockService->companyProfile;
-//        var_dump($companyProfile);
-        $currentPrice = $this->stockService->currentPrice;
-        $companyName = $companyProfile[0]['name'];
-        $companySymbol = $companyProfile[0]['symbol'];
-        $companyLogo = $companyProfile[0]['logo'];
 
         echo $this->twigService->twig->render('headerView.twig');
         $home = [
             'budget' => $budget
         ];
-        echo $this->twigService->twig->render('homeView.twig',$home);
+        echo $this->twigService->twig->render('homeView.twig', $home);
 
         if (isset($_POST['submit1']) && empty($companyProfile)) {
             $errorMessage = 'Wrong symbol';
@@ -50,7 +43,12 @@ class HomeController
             ];
             echo $this->twigService->twig->render('homeErrorView.twig', $context);
         }
-        if(!empty($companyProfile)){
+        if (!empty($_SESSION['stock']['profile'])) {
+            $companyProfile = $_SESSION['stock']['profile'];
+            $companyName = $companyProfile[0]['name'];
+            $companySymbol = $companyProfile[0]['symbol'];
+            $companyLogo = $companyProfile[0]['logo'];
+            $currentPrice = $_SESSION['stock']['price'];
             $context = [
                 'name' => $companyName,
                 'stock' => $currentPrice,
@@ -58,23 +56,22 @@ class HomeController
                 'ticker' => $companySymbol,
             ];
             echo $this->twigService->twig->render('showStockView.twig', $context);
-        }
         $this->stockService->buyStock();
-        if (isset($_POST['submit1']) && $companyProfile[0]['current_price'] > $budget) {
-            $_SESSION['stock']['message'] = 'You cannot afford this stock';
-            $context = [
-                'error' => $_SESSION['stock']['message'],
-            ];
-            echo $this->twigService->twig->render('homeErrorView.twig', $context);
-        } else {
-            $context = [
-                'message' => $_SESSION['stock']['message'],
-                'amountMessage' => $_SESSION['stock']['amountMessage'],
-                'budget' => $budget
-            ];
-            if (isset($_POST['submit1']) && !empty($companyProfile)) {
-                echo $this->twigService->twig->render('buyStockView.twig', $context);
+
+
+            if (isset($_POST['submit1']) && $companyProfile[0]['current_price'] > $budget) {
+                $_SESSION['stock']['message'] = 'You cannot afford this stock';
+                $context = [
+                    'error' => $_SESSION['stock']['message'],
+                ];
+                echo $this->twigService->twig->render('homeErrorView.twig', $context);
             }
-        }
+                $context = [
+                    'message' => $_SESSION['stock']['message'],
+                    'amountMessage' => $_SESSION['stock']['amountMessage'],
+                    'budget' => $budget
+                ];
+                    echo $this->twigService->twig->render('buyStockView.twig', $context);
+            }
     }
 }
